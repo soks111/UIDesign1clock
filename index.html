@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>시계?</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>격자 시계</title>
+
   <style>
     *,
     *::before,
@@ -15,58 +16,157 @@
 
     html,
     body {
+      width: 100%;
       height: 100%;
       overflow: hidden;
-    }
-
-    html {
-      font-size: 16px;
+      background: black;
+      font-family: sans-serif;
     }
 
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 1rem;
-      line-height: 1.5;
-      font-variant-numeric: tabular-nums;
-      color: white;
-      background: black;
+      position: relative;
     }
 
-    #clock {
-      font-size: 6vw;
+    /*
+      격자
+    */
+    #grid {
+      width: 100vw;
+      height: 100vh;
+
+      display: grid;
+
+      grid-template-columns: repeat(1, 1fr);
+      grid-template-rows: repeat(1, 1fr);
+    }
+
+    /*
+      체스판 칸
+    */
+    .cell {
+      width: 100%;
+      height: 100%;
+    }
+
+    /*
+      중앙 시(hour) 표시
+    */
+    #hour {
+      position: fixed;
+
+      top: 50%;
+      left: 50%;
+
+      transform: translate(-50%, -50%);
+
+      /*
+        매우 크게
+      */
+      font-size: 35vw;
+
+      /*
+        희미한 회색
+      */
+      color: rgba(180, 180, 180, 0.18);
+
+      font-weight: 900;
+
+      /*
+        클릭 방해 방지
+      */
+      pointer-events: none;
+
+      /*
+        선택 방지
+      */
+      user-select: none;
+
+      /*
+        줄높이 제거
+      */
+      line-height: 1;
+
+      /*
+        살짝 블러 느낌
+      */
+      text-shadow:
+        0 0 20px rgba(255,255,255,0.08);
     }
   </style>
 </head>
+
 <body>
-  <div id="clock"></div>
+
+  <div id="grid"></div>
+
+  <div id="hour">00</div>
 
   <script>
-    const clock = document.querySelector("#clock")
+    const grid = document.querySelector("#grid")
+    const hourText = document.querySelector("#hour")
 
     function updateClock() {
+
       const now = new Date()
-      const hour = now.getHours()
-      const minute = now.getMinutes()
-      const second = now.getSeconds()
-      let feeling = "막 시작한"
 
-      if (second > 44) {
-        feeling = "거의 다음 분인"
-      } else if (second > 29) {
-        feeling = "조금 늦은"
-      } else if (second > 14) {
-        feeling = "한창인"
+      const hours = String(now.getHours()).padStart(2, "0")
+      const minutes = now.getMinutes()
+      const seconds = now.getSeconds()
+
+      /*
+        초 = 가로 분할 수
+        분 = 세로 분할 수
+      */
+      const cols = seconds + 1
+      const rows = minutes + 1
+
+      /*
+        그리드 갱신
+      */
+      grid.style.gridTemplateColumns =
+        `repeat(${cols}, 1fr)`
+
+      grid.style.gridTemplateRows =
+        `repeat(${rows}, 1fr)`
+
+      /*
+        시(hour) 표시 갱신
+      */
+      hourText.textContent = hours
+
+      /*
+        기존 셀 제거
+      */
+      grid.innerHTML = ""
+
+      /*
+        체스판 생성
+      */
+      for (let y = 0; y < rows; y++) {
+
+        for (let x = 0; x < cols; x++) {
+
+          const cell = document.createElement("div")
+
+          cell.className = "cell"
+
+          /*
+            체스판 패턴
+          */
+          const isWhite = (x + y) % 2 === 0
+
+          cell.style.background =
+            isWhite ? "white" : "black"
+
+          grid.appendChild(cell)
+        }
       }
-
-      clock.textContent = hour + "시 " + minute + "분은 지금 " + feeling + " 중"
     }
 
     updateClock()
+
     setInterval(updateClock, 1000)
   </script>
+
 </body>
 </html>
